@@ -73,6 +73,36 @@ CLI 模式（进入交互菜单）：
 ./cfdata-linux-amd64 -cli -mode nsb -nsbfile ip.txt -nsbtls=true -nsbspeedtest 5 -nsburl auto
 ```
 
+## Docker / Kiri 部署
+
+在项目根目录执行（Kiri 提供兼容的 `docker` 命令）：
+
+```bash
+docker build -t reg.lianli.com.cn/fsyx/cfdata-web:latest .
+docker run -d --name cfdata-web --restart unless-stopped -p 127.0.0.1:13335:13335 -v cfdata-data:/data reg.lianli.com.cn/fsyx/cfdata-web:latest
+```
+
+浏览器打开 `http://localhost:13335`。也可使用 Compose 一次完成构建和启动：
+
+```bash
+docker compose up -d --build
+docker compose logs -f
+```
+
+使用仓库中的预构建镜像时，可先执行 `docker pull reg.lianli.com.cn/fsyx/cfdata-web:latest`，再执行上面的 `docker run` 命令。私有仓库需要先通过 `docker login reg.lianli.com.cn` 登录。
+
+镜像从 `combined_refactor/` 模块构建，以非 root 用户（UID/GID 为 `10001`）运行。`/data` 保存配置文件、IP 列表、位置/ASN 缓存、日志和默认导出结果；命名卷可在容器重建后保留这些数据。若改用宿主机目录挂载，请保证该目录可被 UID `10001` 写入。删除 Compose 服务时，`docker compose down` 保留数据卷，`docker compose down -v` 会删除数据。
+
+默认仅向本机开放端口。需要局域网访问时，将端口映射改为 `13335:13335`，并通过程序参数同时设置 `-user` 和 `-password` 启用登录认证。镜像支持追加原有命令行参数，例如：
+
+```bash
+docker run --rm -it -v cfdata-data:/data reg.lianli.com.cn/fsyx/cfdata-web:latest -cli
+docker run --rm reg.lianli.com.cn/fsyx/cfdata-web:latest -h
+docker build --build-arg VERSION=v1.0 -t reg.lianli.com.cn/fsyx/cfdata-web:v1.0 .
+```
+
+构建默认使用 Go 1.26，可通过 `--build-arg GO_VERSION=1.26` 指定工具链版本。容器内不提供 systemd，CLI 的 systemd 定时任务功能需要在宿主机配置。扫描与测速使用容器网络；IPv6 扫描需要容器环境具备 IPv6 连通性。
+
 ## Web 使用
 
 界面顶部「扫描方式」选择器支持 TCPing（默认）和 HTTPing。不同扫描模式的延迟数据不可互相比较，仅同模式内的对比才有意义。

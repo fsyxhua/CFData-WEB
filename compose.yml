@@ -1,0 +1,15 @@
+services:
+  cfdata-web:
+    build:
+      context: .
+      args:
+        VERSION: ${CFDATA_VERSION:-dev}
+    image: reg.lianli.com.cn/fsyx/cfdata-web:latest
+    ports:
+      - "127.0.0.1:13335:13335"
+    volumes:
+      - cfdata-data:/data
+    restart: unless-stopped
+
+volumes:
+  cfdata-data:

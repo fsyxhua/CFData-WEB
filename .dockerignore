@@ -1,0 +1,10 @@
+# 仅发送实际构建所需文件，排除本地配置、令牌、缓存和产物。
+**
+!combined_refactor/
+!combined_refactor/*.go
+!combined_refactor/go.mod
+!combined_refactor/go.sum
+!combined_refactor/index.html
+!combined_refactor/login.html
+!combined_refactor/favicon.png
+!combined_refactor/ca-certificates.crt
